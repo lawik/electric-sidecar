@@ -1,0 +1,23 @@
+{
+  "name": "sidecar",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "nope",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^8.1.0",
+    "bindings": "^1.5.0",
+    "electric-sql": "^0.4.1"
+  },
+  "bin": {
+    "sidecar": "./index.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.17.6"
+  }
+}
