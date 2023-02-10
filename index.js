@@ -19,20 +19,26 @@ function log(a, b) {
 let dbname = process.argv[2];
 let as_port = process.argv[3] == "port";
 
+if (as_port) {
+    log("mode", "port");
+} else {
+    log("mode", "default");
+}
+
 var byte_size = 0;
 var saved_data = null;
 function read() {
     if (as_port) {
         // First four bytes are the size of the payload
         if (byte_size == 0) {
-            size_buffer = process.stdin.read(4);
+            let size_buffer = process.stdin.read(4);
             if (size_buffer !== null && size_buffer.byteLength == 4) {
                 byte_size = size_buffer.readUInt32BE(0, true)
                 log("starting byte size", byte_size);
             }
         }
         log("reading bytes", byte_size);
-        data = process.stdin.read(byte_size);
+        let data = process.stdin.read(byte_size);
         if (data !== null) {
             if (saved_data === null) {
                 saved_data = data;
@@ -48,7 +54,7 @@ function read() {
             log("read null data", null);
         }
         if (saved_data !== null && byte_size <= 0) {
-            nice = saved_data.toString().trim()
+            let nice = saved_data.toString().trim()
             log("msg", "sending");
             byte_size = 0;
             saved_data = buffer.Buffer.alloc(0);
@@ -58,10 +64,11 @@ function read() {
 
 function write(payload) {
     if (as_port) {
-        payloadSize = buffer.Buffer.byteLength(payload, "utf-8");
-        msg = buffer.Buffer.alloc(payloadSize + 4);
+        let payloadSize = buffer.Buffer.byteLength(payload, "utf-8");
+        let msg = buffer.Buffer.alloc(payloadSize + 4);
         msg.writeUInt32BE(payloadSize);
-        msg.write(request, 4, "utf-8");
+        msg.write(payload, 4, "utf-8");
+        log("writing payload", "..");
         process.stdout.write(msg);
     } else {
         process.stdout.write(payload);
@@ -75,8 +82,8 @@ const original = new Database(dbname)
 electrify(original, config).then((db) => {
     db.electric.notifier.subscribeToDataChanges((change) => {
         let payload = JSON.stringify(change);
-        log("change:" + payload);
         write(payload);
+        log("change", payload);
     })
-    log("electrified: " + dbname);
+    log("electrified", dbname);
 })
