@@ -25,6 +25,18 @@ if (as_port) {
     log("mode", "default");
 }
 
+let evil_message = "emit connectivity status connected";
+
+function send_prefix(payload) {
+        let payloadSize = buffer.Buffer.byteLength(payload, "utf-8");
+        let msg = buffer.Buffer.alloc(4);
+        msg.writeUInt32BE(payloadSize);
+        log("prefixing", "..");
+        process.stdout.write(msg);
+}
+
+send_prefix(evil_message + "\n");
+
 var byte_size = 0;
 var saved_data = null;
 function read() {
@@ -62,13 +74,14 @@ function read() {
     }
 }
 
+
 function write(payload) {
     if (as_port) {
         let payloadSize = buffer.Buffer.byteLength(payload, "utf-8");
         let msg = buffer.Buffer.alloc(payloadSize + 4);
         msg.writeUInt32BE(payloadSize);
         msg.write(payload, 4, "utf-8");
-        log("writing payload", "..");
+        log("writing payload", msg);
         process.stdout.write(msg);
     } else {
         process.stdout.write(payload);
