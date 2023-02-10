@@ -6,10 +6,8 @@ import fs from 'fs';
 import path from 'path';
 
 let dbname = process.argv[2];
-fs.mkdirSync("databases", { recursive: true });
-let db_path = path.join("databases", dbname);
 
-const original = new Database(db_path)
+const original = new Database(dbname)
 electrify(original, config).then((db) => {
     console.log("electrified: " + dbname);
 })
