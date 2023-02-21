@@ -1,7 +1,6 @@
 import Database from 'better-sqlite3'
 import { electrify } from 'electric-sql/node'
 
-import config from './.electric/@config/index.js'
 import fs from 'fs';
 import path from 'path';
 import util from 'util';
@@ -17,13 +16,9 @@ function log(a, b) {
 }
 
 let dbname = process.argv[2];
-let as_port = process.argv[3] == "port";
+let config_path = process.argv[3] || './.electric/@config/index.js';
 
-if (as_port) {
-    log("mode", "port");
-} else {
-    log("mode", "default");
-}
+import config from config_path;
 
 let evil_message = "emit connectivity status connected";
 
@@ -40,37 +35,35 @@ send_prefix(evil_message + "\n");
 var byte_size = 0;
 var saved_data = null;
 function read() {
-    if (as_port) {
-        // First four bytes are the size of the payload
-        if (byte_size == 0) {
-            let size_buffer = process.stdin.read(4);
-            if (size_buffer !== null && size_buffer.byteLength == 4) {
-                byte_size = size_buffer.readUInt32BE(0, true)
-                log("starting byte size", byte_size);
-            }
+    // First four bytes are the size of the payload
+    if (byte_size == 0) {
+        let size_buffer = process.stdin.read(4);
+        if (size_buffer !== null && size_buffer.byteLength == 4) {
+            byte_size = size_buffer.readUInt32BE(0, true)
+            log("starting byte size", byte_size);
         }
-        log("reading bytes", byte_size);
-        let data = process.stdin.read(byte_size);
-        if (data !== null) {
-            if (saved_data === null) {
-                saved_data = data;
-                byte_size = byte_size - data.byteLength;
-                log("new data", null);
-            } else {
-                saved_data = buffer.Buffer.concat([saved_data, data]);
-                byte_size = byte_size - data.byteLength;
-            }
-            log("data size found", data.byteLength);
-            log("remaining to read", byte_size);
+    }
+    log("reading bytes", byte_size);
+    let data = process.stdin.read(byte_size);
+    if (data !== null) {
+        if (saved_data === null) {
+            saved_data = data;
+            byte_size = byte_size - data.byteLength;
+            log("new data", null);
         } else {
-            log("read null data", null);
+            saved_data = buffer.Buffer.concat([saved_data, data]);
+            byte_size = byte_size - data.byteLength;
         }
-        if (saved_data !== null && byte_size <= 0) {
-            let nice = saved_data.toString().trim()
-            log("msg", "sending");
-            byte_size = 0;
-            saved_data = buffer.Buffer.alloc(0);
-        }
+        log("data size found", data.byteLength);
+        log("remaining to read", byte_size);
+    } else {
+        log("read null data", null);
+    }
+    if (saved_data !== null && byte_size <= 0) {
+        let nice = saved_data.toString().trim()
+        log("msg", "sending");
+        byte_size = 0;
+        saved_data = buffer.Buffer.alloc(0);
     }
 }
 
