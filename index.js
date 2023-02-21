@@ -28,11 +28,11 @@ if (as_port) {
 let evil_message = "emit connectivity status connected";
 
 function send_prefix(payload) {
-        let payloadSize = buffer.Buffer.byteLength(payload, "utf-8");
-        let msg = buffer.Buffer.alloc(4);
-        msg.writeUInt32BE(payloadSize);
-        log("prefixing", "..");
-        process.stdout.write(msg);
+    let payloadSize = buffer.Buffer.byteLength(payload, "utf-8");
+    let msg = buffer.Buffer.alloc(4);
+    msg.writeUInt32BE(payloadSize);
+    log("prefixing", "..");
+    process.stdout.write(msg);
 }
 
 send_prefix(evil_message + "\n");
@@ -94,9 +94,14 @@ process.stdin.on('end', process.exit);
 const original = new Database(dbname)
 electrify(original, config).then((db) => {
     db.electric.notifier.subscribeToDataChanges((change) => {
-        let payload = JSON.stringify(change);
+        let payload = JSON.stringify({ event: "data_changed", change: change });
         write(payload);
-        log("change", payload);
+        log("data", payload);
+    })
+    db.electric.notifier.subscribeToConnectivityStateChange((change) => {
+        let payload = JSON.stringify({ event: "connection_status", change: change });
+        write(payload);
+        log("connection", payload);
     })
     log("electrified", dbname);
 })
