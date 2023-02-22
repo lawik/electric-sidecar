@@ -1,22 +1,35 @@
-defmodule ElixirSample do
+defmodule ElectricSidecar do
   use GenServer
 
   def start_link(opts) do
-    GenServer.start_link(ElixirSample, opts, opts)
+    GenServer.start_link(ElectricSidecar, opts, opts)
   end
 
   @impl true
   def init(opts) do
     db_path = Keyword.get(opts, :path)
+    config_path = Keyword.get(opts, :config_path)
     pid = Keyword.get(opts, :pid)
-    path = Path.expand("..")
-    script_path = Path.join(path, "index.js")
-    db_path = Path.join(path, db_path)
-    IO.inspect(path, label: "cwd")
+    script_path = "index.js"
+
+    priv_path =
+      :code.priv_dir(:electric_sidecar)
+      |> IO.inspect()
+
+    path = Path.join(priv_path, "node")
     IO.inspect(db_path, label: "database")
+    IO.inspect(config_path, label: "config")
     IO.inspect(script_path, label: "script")
     Process.flag(:trap_exit, true)
-    port = Port.open({:spawn, "node #{script_path} #{db_path} port"}, [:binary, {:packet, 4}, {:cd, path}, :exit_status])
+
+    port =
+      Port.open({:spawn, "node #{script_path} #{db_path} #{config_path}"}, [
+        :binary,
+        {:packet, 4},
+        {:cd, path},
+        :exit_status
+      ])
+
     Port.monitor(port)
     {:ok, %{port: port, pid: pid}}
   end
@@ -40,4 +53,3 @@ defmodule ElixirSample do
     :normal
   end
 end
-

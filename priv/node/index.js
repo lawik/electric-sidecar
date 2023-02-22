@@ -18,7 +18,7 @@ function log(a, b) {
 let dbname = process.argv[2];
 let config_path = process.argv[3] || './.electric/@config/index.js';
 
-import config from config_path;
+let config = await import(config_path);
 
 let evil_message = "emit connectivity status connected";
 
