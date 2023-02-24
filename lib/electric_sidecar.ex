@@ -13,10 +13,12 @@ defmodule ElectricSidecar do
     config_path = Keyword.get(opts, :config_path)
     pid = Keyword.get(opts, :pid)
     [_preamble, config] = config_path |> File.read!() |> String.split("export default ")
-    script = EEx.eval_file("lib/sidecar.js.eex", config_json: config)
+    priv_path = :code.priv_dir(:electric_sidecar)
+    template_path = Path.join(priv_path, "sidecar.js.eex")
+
+    script = EEx.eval_file(template_path, config_json: config)
     script_name = "index.js"
 
-    priv_path = :code.priv_dir(:electric_sidecar)
     path = Path.join(priv_path, "node")
     File.mkdir_p!(path)
     script_path = Path.join(path, script_name)
@@ -41,12 +43,15 @@ defmodule ElectricSidecar do
   @impl true
   def handle_info({_port, {:data, change}}, state) do
     Logger.debug("port output: #{change}")
+
     case change do
       "emit" <> _ ->
         nil
+
       change ->
         send(state.pid, {:change, change})
     end
+
     {:noreply, state}
   end
 
