@@ -3,6 +3,9 @@ defmodule ElectricSidecar do
 
   require Logger
 
+  @node_dir Path.join(:code.priv_dir(:electric_sidecar), "node")
+  {_, 0} = System.shell("npm ci", cd: @node_dir)
+
   def start_link(opts) do
     GenServer.start_link(ElectricSidecar, opts, opts)
   end
@@ -62,7 +65,7 @@ defmodule ElectricSidecar do
   end
 
   @impl true
-  def terminate(reason, state) do
+  def terminate(reason, _state) do
     Logger.debug("terminate: #{inspect(reason)}")
     :normal
   end
