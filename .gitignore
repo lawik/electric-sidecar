@@ -30,3 +30,4 @@ elixir_sample-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+/priv/node/index.js

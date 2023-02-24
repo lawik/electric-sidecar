@@ -1,6 +1,8 @@
 defmodule ElectricSidecar do
   use GenServer
 
+  require Logger
+
   def start_link(opts) do
     GenServer.start_link(ElectricSidecar, opts, opts)
   end
@@ -20,9 +22,9 @@ defmodule ElectricSidecar do
     script_path = Path.join(path, script_name)
     File.write!(script_path, script)
 
-    IO.inspect(db_path, label: "database")
-    IO.inspect(config_path, label: "config")
-    IO.inspect(script_path, label: "script")
+    Logger.debug("db_path: #{db_path}")
+    Logger.debug("config_path: #{config_path}")
+    Logger.debug("script_path: #{script_path}")
     Process.flag(:trap_exit, true)
 
     port =
@@ -38,20 +40,25 @@ defmodule ElectricSidecar do
 
   @impl true
   def handle_info({_port, {:data, change}}, state) do
-    IO.inspect(change, label: "change")
-    send(state.pid, {:change, change})
+    Logger.debug("port output: #{change}")
+    case change do
+      "emit" <> _ ->
+        nil
+      change ->
+        send(state.pid, {:change, change})
+    end
     {:noreply, state}
   end
 
   @impl true
   def handle_info(other, state) do
-    IO.inspect(other, label: "other")
+    Logger.debug("other msg: #{inspect(other)}")
     {:noreply, state}
   end
 
   @impl true
   def terminate(reason, state) do
-    IO.inspect(reason, label: "terminate")
+    Logger.debug("terminate: #{inspect(reason)}")
     :normal
   end
 end
