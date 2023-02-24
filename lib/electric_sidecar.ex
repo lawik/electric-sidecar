@@ -13,9 +13,8 @@ defmodule ElectricSidecar do
   @impl true
   def init(opts) do
     db_path = Keyword.get(opts, :path)
-    config_path = Keyword.get(opts, :config_path)
+    config = Keyword.fetch!(opts, :config) |> Jason.encode!()
     pid = Keyword.get(opts, :pid)
-    [_preamble, config] = config_path |> File.read!() |> String.split("export default ")
     priv_path = :code.priv_dir(:electric_sidecar)
     template_path = Path.join(priv_path, "sidecar.js.eex")
 
@@ -28,7 +27,6 @@ defmodule ElectricSidecar do
     File.write!(script_path, script)
 
     Logger.debug("db_path: #{db_path}")
-    Logger.debug("config_path: #{config_path}")
     Logger.debug("script_path: #{script_path}")
     Process.flag(:trap_exit, true)
 
